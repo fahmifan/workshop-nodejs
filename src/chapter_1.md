@@ -203,7 +203,7 @@ exports.create = ({ username = '', name = '', password = '' }) => {
                     return
                 }
 
-                let id = results.insertId
+                let id = res.insertId
                 resolve({ username, name, id })
             })
         })
@@ -227,3 +227,51 @@ userRepo.create({ username: "miun173", name: "fahmi", password: "test" })
     })
 ```
 
+Kalau udah berhasil terbuat dan tersimpan ke database. Kita lanjut bikin `user service`
+```js
+const userRepo = require('../repository/user_repository.js')
+
+const Router = require('express').Router
+const r = Router()
+
+r.post("/", (req, res) => {
+    const { user } = req.body
+    // TODO: add validation
+    const newUser = userRepo.create(user)
+    if (!newUser) {
+        res.status(400).json({"message": "failed"})
+        return
+    }
+    res.json(newUser)
+})
+
+module.exports = r
+```
+
+Terus kita akan panggil `user_service.js` dari `service.js`
+```js
+// service/service.js
+...
+const userService = require('./user_service')
+...
+app.get("/ping", (req, res) => res.json({"ping": "pong"}))
+app.use("/users", userService)
+...
+```
+
+Sebelum kita tes, kita akan pakai nodemon untuk enable fitur hotreload. Kita akan buat script start.
+Untuk jalanin `nodemon`
+```json
+// package.json
+...
+"scirpts": {
+    ...
+    "dev": "nodemon --ignore node_modules/ main.js"
+}
+...
+```
+
+selanjutnya tinggal jalanin
+```
+npm run dev
+```
