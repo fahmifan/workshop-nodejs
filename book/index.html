@@ -1,0 +1,561 @@
+<!DOCTYPE HTML>
+<html lang="id" class="sidebar-visible no-js light">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Chapter 1 - workshop-nodejs</title>
+        
+
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff" />
+
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link href="https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800" rel="stylesheet" type="text/css">
+        <link href="https://fonts.googleapis.com/css?family=Source+Code+Pro:500" rel="stylesheet" type="text/css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="highlight.css">
+        <link rel="stylesheet" href="tomorrow-night.css">
+        <link rel="stylesheet" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        
+
+        
+    </head>
+    <body>
+        <!-- Provide site root to javascript -->
+        <script type="text/javascript">
+            var path_to_root = "";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "light" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script type="text/javascript">
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script type="text/javascript">
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('no-js')
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add('js');
+        </script>
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script type="text/javascript">
+            var html = document.querySelector('html');
+            var sidebar = 'hidden';
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            }
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div id="sidebar-scrollbox" class="sidebar-scrollbox">
+                <ol class="chapter"><li class="expanded "><a href="chapter_1.html"><strong aria-hidden="true">1.</strong> Chapter 1</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                
+                <div id="menu-bar" class="menu-bar">
+                    <div id="menu-bar-sticky-container">
+                        <div class="left-buttons">
+                            <button id="sidebar-toggle" class="icon-button" type="button" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                                <i class="fa fa-bars"></i>
+                            </button>
+                            <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                                <i class="fa fa-paint-brush"></i>
+                            </button>
+                            <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                                <li role="none"><button role="menuitem" class="theme" id="light">Light (default)</button></li>
+                                <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                                <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                                <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                                <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                            </ul>
+                            
+                            <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                                <i class="fa fa-search"></i>
+                            </button>
+                            
+                        </div>
+
+                        <h1 class="menu-title">workshop-nodejs</h1>
+
+                        <div class="right-buttons">
+                            <a href="print.html" title="Print this book" aria-label="Print this book">
+                                <i id="print-button" class="fa fa-print"></i>
+                            </a>
+                            
+                        </div>
+                    </div>
+                </div>
+
+                
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" name="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+                
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script type="text/javascript">
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1><a class="header" href="#workshop-nodejs" id="workshop-nodejs">Workshop Nodejs</a></h1>
+<h2><a class="header" href="#start" id="start">Start</a></h2>
+<p>Kita akan pakai <code>repository</code> pattern, jadi semua akses ke storage/thirdparty 
+akan dilakukan di modul repository.</p>
+<pre><code>.
+├── config.js
+├── db
+│   ├── migrations.js
+│   ├── mysql.js
+│   └── utils.js
+├── main.js
+├── package.json
+├── package-lock.json
+├── README.md
+├── repository
+│   └── user_repository.js
+└── service
+    ├── service.js
+</code></pre>
+<p>Buat folder project lalu buka terminal dan ketikkan</p>
+<pre><code>npm init -y
+</code></pre>
+<p>Lalu, kita install dependesi berikut</p>
+<pre><code>npm i express body-parser mysql nodemon
+</code></pre>
+<p>Buat service <code>service/service.js</code></p>
+<pre><code class="language-js">const express = require('express')
+const bodyParser = require('body-parser')
+
+const app = express()
+
+// create application/json parser
+app.use(bodyParser.json({ type: 'application/json' }))
+app.get(&quot;/ping&quot;, (req, res) =&gt; res.json({&quot;ping&quot;: &quot;pong&quot;}))
+
+exports.start = () =&gt; {
+    app.listen(3000, () =&gt; {
+        console.log(&quot;server start @ :3000&quot;)
+    })
+}
+
+module.exports = exports
+</code></pre>
+<p>Kita buat file <code>main.js</code> di root folder</p>
+<pre><code class="language-js">const service = require('./service/service.js')
+
+service.start()
+</code></pre>
+<p>Kita tes</p>
+<pre><code>curl localhost:3000/ping
+</code></pre>
+<h2><a class="header" href="#features" id="features">Features</a></h2>
+<ol>
+<li>Sebagai pengunjung saya ingin dapat mendaftarkan diri ke platform, menggunakan username dan password</li>
+<li>Sebagai pemilik platform berita hanya dapat ditulis/diubah/dihapus oleh pengguna yg terotorisasi</li>
+<li>Sebagai pengunjung saya ingin melihat daftar berita yang berisi judul, penulis, tanggal terbit dan isi berita</li>
+</ol>
+<h2><a class="header" href="#design" id="design">Design</a></h2>
+<pre><code>User {
+    id: Int
+    username: String
+    password: String
+    name: String
+}
+
+Content {
+    id: Int
+    author_id: Int
+    title: String
+    body: String
+}
+</code></pre>
+<h3><a class="header" href="#feature-1" id="feature-1">Feature 1:</a></h3>
+<pre><code>- register --&gt; check user exists
+    - not exist --&gt; create user
+    - exists --&gt; error 
+
+- login --&gt; check user exists
+    - not exists --&gt; error
+    - exists --&gt; validate password 
+        - invalid password --&gt; error
+        - valid --&gt; logged in
+</code></pre>
+<h2><a class="header" href="#user-service" id="user-service">User service</a></h2>
+<p>Kita akan buat <code>user service</code> ini adalah salah satu core karena akan digunakan untuk
+per-auth-an. Tapi sebelum nya kita akan setup database dulu. 
+Buat file <code>db/mysql.js</code></p>
+<pre><code class="language-js">const mysql = require('mysql');
+let pool;
+module.exports = {
+    /**
+     * @returns {mysql.Pool}
+     */
+    getPool: function () {
+      if (pool) return pool;
+
+      pool = mysql.createPool({
+        host: '127.0.0.1',
+        port: 3306,
+        user: 'root',
+        password: 'root',
+        database: 'workshop'
+      });
+
+      return pool;
+    }
+};
+
+</code></pre>
+<p>Lalu kita buat <code>database migration</code>, kita bikin <code>utils</code> untuk jalanin migration.
+Buat file <code>db/utils.js</code></p>
+<pre><code class="language-js">// db/utils.js
+const db = require('./mysql')
+const pool = db.getPool()
+
+exports.migrate = (queries = []) =&gt; {
+    pool.getConnection((err, conn) =&gt; {
+        if (err) {
+            console.error(err)
+            return
+        }
+    
+        queries.forEach(q =&gt; {
+            conn.query(q, (err, result) =&gt; {
+                if (err) {
+                    console.error(err)
+
+                    conn.release()
+                    break
+                }
+            })
+        })
+
+        conn.release()
+        pool.end()
+    })
+}
+
+module.exports = exports
+</code></pre>
+<p>Kita akan tulis migration2 nya di file <code>db/migrations.js</code>, kita perlu bikin user migration</p>
+<pre><code class="language-js">const utils = require('./utils.js')
+let createTableUser = `
+    CREATE TABLE IF NOT EXISTS users (
+        id INT NOT NULL AUTO_INCREMENT,
+        username VARCHAR(255),
+        name VARCHAR(255),
+        password TEXT,
+        CONSTRAINT users_username_unique UNIQUE (username),
+        PRIMARY KEY (id)
+    );
+`
+
+utils.migrate([createTableUser])
+</code></pre>
+<p>sip, sebelum kita jalanin migrasi nya, nyalain mysql dan bikin database dengan nama <code>workshop</code>.</p>
+<pre><code>node db/migration.js
+</code></pre>
+<p>Sekarang kita buat <code>user_repository</code>, di sini lah fungsi CRUD dibuat. Untuk fitur satu, kita perlu 
+fungsi <code>create user</code></p>
+<pre><code class="language-js">const db = require('../db/mysql.js')
+const pool = db.getPool()
+
+exports.create = ({ username = '', name = '', password = '' }) =&gt; {
+    return new Promise((resolve, reject) =&gt; {
+        pool.getConnection((err, conn) =&gt; {
+            if (err) {
+                console.error(err)
+                return
+            }
+            
+            const q = `INSERT INTO users (username, name, password) VALUES(?, ?, ?)`
+            conn.query(q, [username, name, password], (err, res) =&gt; {
+                conn.release()
+
+                if (err) {
+                    console.error(err)
+                    reject(err)
+                    return
+                }
+
+                let id = res.insertId
+                resolve({ username, name, id })
+            })
+        })
+    })
+}
+</code></pre>
+<p>Kita bisa test langsung buat file <code>test.js</code></p>
+<pre><code class="language-js">const userRepo = require('./repository/user_repository.js')
+
+userRepo.create({ username: &quot;miun173&quot;, name: &quot;fahmi&quot;, password: &quot;test&quot; })
+    .then(user =&gt; {
+        console.log(user)
+    })
+    .catch(err =&gt; {
+        console.error(err)
+    })
+    .finally(() =&gt; {
+        process.exit(0)
+    })
+</code></pre>
+<p>Kalau udah berhasil terbuat dan tersimpan ke database. Kita lanjut bikin <code>user service</code></p>
+<pre><code class="language-js">const userRepo = require('../repository/user_repository.js')
+
+const Router = require('express').Router
+const r = Router()
+
+r.post(&quot;/&quot;, (req, res) =&gt; {
+    const { user } = req.body
+    // TODO: add validation
+    const newUser = userRepo.create(user)
+    if (!newUser) {
+        res.status(400).json({&quot;message&quot;: &quot;failed&quot;})
+        return
+    }
+    res.json(newUser)
+})
+
+module.exports = r
+</code></pre>
+<p>Terus kita akan panggil <code>user_service.js</code> dari <code>service.js</code></p>
+<pre><code class="language-js">// service/service.js
+...
+const userService = require('./user_service')
+...
+app.get(&quot;/ping&quot;, (req, res) =&gt; res.json({&quot;ping&quot;: &quot;pong&quot;}))
+app.use(&quot;/users&quot;, userService)
+...
+</code></pre>
+<p>Sebelum kita tes, kita akan pakai nodemon untuk enable fitur hotreload. Kita akan buat script start.
+Untuk jalanin <code>nodemon</code></p>
+<pre><code class="language-json">// package.json
+...
+&quot;scirpts&quot;: {
+    ...
+    &quot;dev&quot;: &quot;nodemon --ignore node_modules/ main.js&quot;
+}
+...
+</code></pre>
+<p>selanjutnya tinggal jalanin</p>
+<pre><code>npm run dev
+</code></pre>
+<h2><a class="header" href="#fitur-2" id="fitur-2">Fitur 2</a></h2>
+<blockquote>
+<p>Sebagai pemilik platform berita hanya dapat ditulis/diubah/dihapus oleh pengguna yg terotorisasi
+Kita perlu mekanisme auth nih. Cara yg umum digunakan adalah token based auth. Dinama authentikasi dan authorisisai akan menggunakan token. Token ini sendiri bisa berupa string yang merepresentasikan data pengguna.</p>
+</blockquote>
+<p>Kita akan buat token dengan jwt. Install dulu dependensi berikut</p>
+<pre><code>npm i jsonwebtoken
+</code></pre>
+<pre><code class="language-js">// service/auth.js
+
+var jwt = require('jsonwebtoken');
+
+const secretKey = 'secret'
+
+exports.sign = (user) =&gt; {
+    if (user.password) {
+        delete user.password
+    }
+
+    return jwt.sign(user, secretKey);
+}
+
+// return decoded token
+exports.verfiy = (token) =&gt; {
+    try {
+        return jwt.verify(token, secretKey);
+    } catch(err) {
+        console.error(err)
+        return false
+    }
+}
+
+module.exports = exports
+</code></pre>
+<p>Untuk fitur login kita akan menggunakan username dan password dan mengembalikan jtw token
+langsung saja kita buat repository untuk find by username nya. Krn hasil query mysql itu adalah sebuah class, kita perlu mentransform ke bentuk plain object.
+Kita akan buat juga utility untuk transformasi nya</p>
+<pre><code class="language-js">// repository/utils.js
+exports.objectifyRawPacket = row =&gt; ({...row});
+
+module.exports = exports
+</code></pre>
+<pre><code class="language-js">// repository/user_repository.js
+...
+exports.findByUsername = (username) =&gt; new Promise((resolve, reject) =&gt;{
+    pool.getConnection((err, conn) =&gt; {
+        if (err) {
+            reject(err)
+            return
+        }
+
+        conn.query(`SELECT * FROM users WHERE username = ?`, [username], (err, res) =&gt; {
+            conn.release()
+
+            if (err) {
+                console.error(err)
+                reject(err)
+                return
+            }
+
+            if (res.size == 0) {
+                resolve(null)
+                return
+            }
+
+            let obj = utils.objectifyRawPacket(res[0])
+            console.log(obj)
+            resolve(obj)
+        })
+    })
+})
+...
+</code></pre>
+<p>Lalu, kita buat auth_service nya</p>
+<pre><code class="language-js">//  service/auth_service.js
+const userRepo = require('../repository/user_repository.js')
+const auth = require('./auth.js')
+
+const Router = require('express').Router
+const r = Router()
+
+r.post(&quot;/login&quot;, async (req, res) =&gt; {
+    try {
+        const { username, password } = req.body
+        const user = await userRepo.findByUsername(username)
+        if (!user || (user.password != password)) {
+            return res.status(404).json({&quot;message&quot;: &quot;user not found&quot;})
+        }
+
+        const token = auth.sign(user)
+        return res.json(token)
+    } catch (err) {
+        console.error(err)
+        res.status(403).json({&quot;message&quot;: &quot;unauthenticated&quot;})
+        return
+    }
+})
+
+module.exports = r
+</code></pre>
+<p>Lalu, kita tambahkan ke service</p>
+<pre><code class="language-js">const authService = require('./auth_service') // import authService
+...
+app.use(&quot;/users&quot;, userService)
+app.use(&quot;/auth&quot;, authService) // tambahkan di sini
+...
+</code></pre>
+<p>Kita coba saja langsung di POSTMAN. Kalau sudah berhasil harusnya ada balikan token.
+Token itu bisa dicek hasilnya dari verify.</p>
+<pre><code class="language-js">// test.js
+const auth = require('./service/auth')
+const decoded = auth.verfiy(`eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6OCwidXNlcm5hbWUiOiJqb2huIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTgzNTA1NjQ1fQ.R7zMh8iLMau5q_yagjhFYYAtyqKLKP4B_KShh_rPjvQ`)
+
+console.log(decoded)
+</code></pre>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                        
+
+                        
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                
+
+                
+            </nav>
+
+        </div>
+
+        
+
+        
+
+        
+        
+        
+        <script type="text/javascript">
+            window.playpen_copyable = true;
+        </script>
+        
+
+        
+
+        
+        <script src="elasticlunr.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="mark.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="searcher.js" type="text/javascript" charset="utf-8"></script>
+        
+
+        <script src="clipboard.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="highlight.js" type="text/javascript" charset="utf-8"></script>
+        <script src="book.js" type="text/javascript" charset="utf-8"></script>
+
+        <!-- Custom JS scripts -->
+        
+
+        
+
+    </body>
+</html>
