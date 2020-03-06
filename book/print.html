@@ -220,6 +220,7 @@ Content {
     author_id: Int
     title: String
     body: String
+    slug: String
 }
 </code></pre>
 <h3><a class="header" href="#feature-1" id="feature-1">Feature 1:</a></h3>
@@ -507,6 +508,183 @@ const auth = require('./service/auth')
 const decoded = auth.verfiy(`eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6OCwidXNlcm5hbWUiOiJqb2huIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTgzNTA1NjQ1fQ.R7zMh8iLMau5q_yagjhFYYAtyqKLKP4B_KShh_rPjvQ`)
 
 console.log(decoded)
+</code></pre>
+<h3><a class="header" href="#content" id="content">Content</a></h3>
+<p>Oke, sekarang kita akan membuat <code>content</code>, pertama kita tambahkan migration nya dulu.
+Tambahkan <code>createTableContent</code> setelah <code>createTableUser</code> pada fungsi <code>migrate</code>. </p>
+<pre><code class="language-js">let createTableContent = `
+    CREATE TABLE IF NOT EXISTS contents (
+        id INT NOT NULL AUTO_INCREMENT,
+        author_id INT NOT NULL,
+        title TEXT,
+        slug VARCHAR(3072),
+        body TEXT,
+        CONSTRAINT contents_slug_unique UNIQUE (slug),
+        PRIMARY KEY (id)
+    )
+`
+
+utils.migrate([createTableUser, createTableContent])
+</code></pre>
+<p>Selanjutnya kita perlu membuat, repo nya. Tambahkan kode berikut</p>
+<pre><code class="language-js">// repository/content_repository.js
+const mysql = require('../db/mysql')
+
+exports.create = ({ author_id = 0, title = '', body = '' }) =&gt; {
+    return new Promise((resolve, reject) =&gt; {
+        pool.getConnection((err, conn) =&gt; {
+            if (err) {
+                console.error(err)
+                reject(err)
+                return
+            }
+
+            // slug ini harus dibuat unique
+            const slug = createUniqueSlug(title)
+
+            const q = `INSERT INTO contents (author_id, title, body, slug) VALUES(?, ?, ?, ?)`
+            conn.query(q, [author_id, title, body, slug], (err, res) =&gt; {
+                conn.release()
+
+                if (err) {
+                    console.error(err)
+                    reject(err)
+                    return
+                }
+
+                const id = res.insertedId
+                resolve({ id, author_id, title, body, slug })
+            })
+        })
+    })
+}
+</code></pre>
+<p>Untuk membuat slug kita bisa menggunakan module <code>slugify</code>.</p>
+<pre><code>npm i slugify
+</code></pre>
+<p>Lalu, kita buat fungsi <code>createUniqueSlug</code>, agar slug bisa selalu unique, kita akan tambahkan unix timestamp di akhir slug.</p>
+<pre><code class="language-js">// repository/content_repository.js
+
+const slugify = require('slugify')
+...
+const createUniqueSlug = (text) =&gt; {
+    const unique = (new Date()).getTime()
+    return slugify(text, '-') + '-' + unique
+}
+...
+</code></pre>
+<p>Kita bisa coba dulu di file <code>test.js</code></p>
+<pre><code class="language-js">const contentRepo = require('./repository/content_repository')
+contentRepo.create({ author_id: 8, title: 'my first story', body: 'body of my first story'})
+        .then(content =&gt; {
+            console.log(content)
+        })
+        .catch(err =&gt; {
+            console.error(err)
+        })
+        .finally(() =&gt; {
+            process.exit(0)
+        })
+</code></pre>
+<p>Sip, jika sudah berhasil, kita akan buat service nya.</p>
+<pre><code class="language-js">// service/content_service.js
+
+const userRepo = require('../repository/user_repository.js')
+const contentRepo = require('../repository/content_repository.js')
+
+const Router = require('express').Router
+const r = Router()
+
+r.post(&quot;/&quot;, async (req, res) =&gt; {
+    try {
+        const { content } = req.body
+        // TODO: add validation
+
+        // check is user exists ?
+        const user = await userRepo.findByID(content.author_id)
+        if (!user || !user.id) {
+            return res.status(404).json({&quot;message&quot;: &quot;author not found&quot;})
+        }
+
+        const newContent = await contentRepo.create(content)
+        if (!newContent) {
+            return res.status(400).json({&quot;message&quot;: &quot;failed&quot;})
+        }
+    
+        return res.json(newContent)   
+    } catch (err) {
+        console.error(err)
+        return res.status(500).json({ &quot;message&quot;: &quot;something wrong&quot; })
+    }
+})
+
+module.exports = r
+</code></pre>
+<p>Kita tambahkan <code>content_service</code> ke main router</p>
+<pre><code class="language-js">...
+const contentService = require('./content_service')
+...
+app.use(&quot;/contents&quot;, contentService)
+...
+</code></pre>
+<p>Selanjutnya, kita akan perlu menampilkan daftar content yang ada. Kita buat repo nya.
+Untuk mempermudah, pagination akan menggunakan <code>limit offset</code>.</p>
+<pre><code class="language-js">...
+const MAX_SIZE = 50
+...
+exports.findAll = ({ size = 0, page = 0 }) =&gt; {
+    if (page &lt; 0) {
+        page = 0
+    }
+
+    if (size &lt;= 0 || size &gt; 50) {
+        size = MAX_SIZE
+    }
+
+    const offset = size * page
+    return new Promise((resolve, reject) =&gt; {
+        pool.getConnection((err, conn) =&gt; {
+            if (err) {
+                console.error(err)
+                reject(err)
+                return
+            }
+
+            const q = `SELECT * FROM contents limit ? offset ?`
+            conn.query(q, [size, offset], (err, res) =&gt; {
+                if (err) {
+                    console.error(err)
+                    reject(err)
+                    return
+                }
+
+                // transform res to array of simple object
+                resolve(res.map(r =&gt; utils.objectifyRawPacket(r)))
+            })
+        })
+    })
+}
+</code></pre>
+<p>Selanjutnya, kita tambahkan di content service</p>
+<pre><code class="language-js">r.get(&quot;/&quot;, async(req, res) =&gt; {
+    try {
+        let { size, page } = req.query
+
+        // convert from string to number
+        size = Number.parseInt(size, 10)
+        page = Number.parseInt(page, 10)
+
+        const contents = await contentRepo.findAll({ size, page })
+        if (!contents) {
+            return res.status(404).json({&quot;message&quot;: &quot;failed&quot;})
+        }
+    
+        return res.json(contents)   
+    } catch (err) {
+        console.error(err)
+        return res.status(500).json({ &quot;message&quot;: &quot;something wrong&quot; })
+    }
+})
 </code></pre>
 
                     </main>
