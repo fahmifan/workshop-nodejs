@@ -1,0 +1,6 @@
+[book]
+authors = ["miun173"]
+language = "id"
+multilingual = false
+src = "src"
+title = "workshop-nodejs"
