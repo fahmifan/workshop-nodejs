@@ -81,6 +81,7 @@ Content {
     author_id: Int
     title: String
     body: String
+    slug: String
 }
 ```
 
@@ -405,3 +406,134 @@ const decoded = auth.verfiy(`eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6OCwidX
 console.log(decoded)
 ```
 
+### Content
+Oke, sekarang kita akan membuat `content`, pertama kita tambahkan migration nya dulu.
+Tambahkan `createTableContent` setelah `createTableUser` pada fungsi `migrate`. 
+```js
+let createTableContent = `
+    CREATE TABLE IF NOT EXISTS contents (
+        id INT NOT NULL AUTO_INCREMENT,
+        author_id INT NOT NULL,
+        title TEXT,
+        slug VARCHAR(3072),
+        body TEXT,
+        CONSTRAINT contents_slug_unique UNIQUE (slug),
+        PRIMARY KEY (id)
+    )
+`
+
+utils.migrate([createTableUser, createTableContent])
+```
+
+Selanjutnya kita perlu membuat, repo nya. Tambahkan kode berikut
+```js
+// repository/content_repository.js
+const mysql = require('../db/mysql')
+
+exports.create = ({ author_id = 0, title = '', body = '' }) => {
+    return new Promise((resolve, reject) => {
+        pool.getConnection((err, conn) => {
+            if (err) {
+                console.error(err)
+                reject(err)
+                return
+            }
+
+            // slug ini harus dibuat unique
+            const slug = createUniqueSlug(title)
+
+            const q = `INSERT INTO contents (author_id, title, body, slug) VALUES(?, ?, ?, ?)`
+            conn.query(q, [author_id, title, body, slug], (err, res) => {
+                conn.release()
+
+                if (err) {
+                    console.error(err)
+                    reject(err)
+                    return
+                }
+
+                const id = res.insertedId
+                resolve({ id, author_id, title, body, slug })
+            })
+        })
+    })
+}
+```
+
+Untuk membuat slug kita bisa menggunakan module `slugify`.
+```
+npm i slugify
+```  
+
+Lalu, kita buat fungsi `createUniqueSlug`, agar slug bisa selalu unique, kita akan tambahkan unix timestamp di akhir slug.
+```js
+// repository/content_repository.js
+
+const slugify = require('slugify')
+...
+const createUniqueSlug = (text) => {
+    const unique = (new Date()).getTime()
+    return slugify(text, '-') + '-' + unique
+}
+...
+```
+
+Kita bisa coba dulu di file `test.js`
+```js
+const contentRepo = require('./repository/content_repository')
+contentRepo.create({ author_id: 8, title: 'my first story', body: 'body of my first story'})
+        .then(content => {
+            console.log(content)
+        })
+        .catch(err => {
+            console.error(err)
+        })
+        .finally(() => {
+            process.exit(0)
+        })
+```
+
+Sip, jika sudah berhasil, kita akan buat service nya.
+```js
+// service/content_service.js
+
+const userRepo = require('../repository/user_repository.js')
+const contentRepo = require('../repository/content_repository.js')
+
+const Router = require('express').Router
+const r = Router()
+
+r.post("/", async (req, res) => {
+    try {
+        const { content } = req.body
+        // TODO: add validation
+
+        // check is user exists ?
+        const user = await userRepo.findByID(content.author_id)
+        if (!user || !user.id) {
+            return res.status(404).json({"message": "author not found"})
+        }
+
+        const newContent = await contentRepo.create(content)
+        if (!newContent) {
+            return res.status(400).json({"message": "failed"})
+        }
+    
+        return res.json(newContent)   
+    } catch (err) {
+        console.error(err)
+        return res.status(500).json({ "message": "something wrong" })
+    }
+})
+
+module.exports = r
+```
+
+Kita tambahkan `content_service` ke main router
+```js
+...
+const contentService = require('./content_service')
+...
+app.use("/contents", contentService)
+...
+```
