@@ -1,5 +1,5 @@
 # Feature 3
-> Sebagai pengunjung saya ingin melihat daftar berita yang berisi judul, penulis, tanggal terbit dan isi berita
+> Sebagai pengunjung saya ingin melihat daftar berita yang berisi id, judul, penulis dan isi berita
 
 Selanjutnya, kita perlu menampilkan daftar content yang ada. Kita buat repo nya.
 Untuk mempermudah, pagination akan menggunakan `limit offset`.
