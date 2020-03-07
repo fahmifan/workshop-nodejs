@@ -206,7 +206,7 @@ service.start()
 <ol>
 <li>Sebagai pengunjung saya ingin dapat mendaftarkan diri ke platform, menggunakan username dan password</li>
 <li>Sebagai pemilik platform berita hanya dapat ditulis/diubah oleh pengguna yg terotorisasi</li>
-<li>Sebagai pengunjung saya ingin melihat daftar berita yang berisi judul, penulis, tanggal terbit dan isi berita</li>
+<li>Sebagai pengunjung saya ingin melihat daftar berita yang berisi id, judul, penulis dan isi berita</li>
 </ol>
 <h2><a class="header" href="#design" id="design">Design</a></h2>
 <pre><code>User {
@@ -713,7 +713,7 @@ r.put(&quot;/&quot;,  middleware.authenticate, async(req, res) =&gt; {
 </code></pre>
 <h1><a class="header" href="#feature-3" id="feature-3">Feature 3</a></h1>
 <blockquote>
-<p>Sebagai pengunjung saya ingin melihat daftar berita yang berisi judul, penulis, tanggal terbit dan isi berita</p>
+<p>Sebagai pengunjung saya ingin melihat daftar berita yang berisi id, judul, penulis dan isi berita</p>
 </blockquote>
 <p>Selanjutnya, kita perlu menampilkan daftar content yang ada. Kita buat repo nya.
 Untuk mempermudah, pagination akan menggunakan <code>limit offset</code>.</p>
