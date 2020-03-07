@@ -1,5 +1,5 @@
 # Feature 2
-> Sebagai pemilik platform berita hanya dapat ditulis/diubah/dihapus oleh pengguna yg terotorisasi
+> Sebagai pemilik platform berita hanya dapat ditulis/diubah oleh pengguna yg terotorisasi
 
 Kita perlu mekanisme auth nih. Cara yg umum digunakan adalah token based auth. Dinama authentikasi dan authorisisai akan menggunakan token. Token ini sendiri bisa berupa string yang merepresentasikan data pengguna.
 
