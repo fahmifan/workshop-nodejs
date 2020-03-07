@@ -83,7 +83,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div id="sidebar-scrollbox" class="sidebar-scrollbox">
-                <ol class="chapter"><li class="expanded "><a href="chapter_1.html"><strong aria-hidden="true">1.</strong> Chapter 1</a></li></ol>
+                <ol class="chapter"><li class="expanded "><a href="start.html"><strong aria-hidden="true">1.</strong> Start</a></li><li class="expanded "><a href="feature_design.html"><strong aria-hidden="true">2.</strong> Features &amp; Design</a></li><li class="expanded "><a href="hacking.html"><strong aria-hidden="true">3.</strong> Hacking!!</a></li><li><ol class="section"><li class="expanded "><a href="feature_1.html"><strong aria-hidden="true">3.1.</strong> Feature 1</a></li><li class="expanded "><a href="feature_2.html"><strong aria-hidden="true">3.2.</strong> Feature 2</a></li><li class="expanded "><a href="feature_3.html"><strong aria-hidden="true">3.3.</strong> Feature 3</a></li></ol></li><li class="expanded "><a href="exercise.html"><strong aria-hidden="true">4.</strong> Exercises</a></li><li class="expanded "><a href="bonus.html"><strong aria-hidden="true">5.</strong> Bonus</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -201,10 +201,11 @@ service.start()
 <p>Kita tes</p>
 <pre><code>curl localhost:3000/ping
 </code></pre>
+<h1><a class="header" href="#features--design" id="features--design">Features &amp; Design</a></h1>
 <h2><a class="header" href="#features" id="features">Features</a></h2>
 <ol>
 <li>Sebagai pengunjung saya ingin dapat mendaftarkan diri ke platform, menggunakan username dan password</li>
-<li>Sebagai pemilik platform berita hanya dapat ditulis/diubah/dihapus oleh pengguna yg terotorisasi</li>
+<li>Sebagai pemilik platform berita hanya dapat ditulis/diubah oleh pengguna yg terotorisasi</li>
 <li>Sebagai pengunjung saya ingin melihat daftar berita yang berisi judul, penulis, tanggal terbit dan isi berita</li>
 </ol>
 <h2><a class="header" href="#design" id="design">Design</a></h2>
@@ -223,7 +224,13 @@ Content {
     slug: String
 }
 </code></pre>
-<h3><a class="header" href="#feature-1" id="feature-1">Feature 1:</a></h3>
+<h1><a class="header" href="#hacking" id="hacking">Hacking!!</a></h1>
+<p>Di bagian ini kita akan melakukan coding aplikasi</p>
+<h1><a class="header" href="#feature-1" id="feature-1">Feature 1</a></h1>
+<blockquote>
+<p>Sebagai pengunjung saya ingin dapat mendaftarkan diri ke platform, menggunakan username dan password</p>
+</blockquote>
+<h2><a class="header" href="#flow" id="flow">Flow</a></h2>
 <pre><code>- register --&gt; check user exists
     - not exist --&gt; create user
     - exists --&gt; error 
@@ -394,11 +401,11 @@ Untuk jalanin <code>nodemon</code></p>
 <p>selanjutnya tinggal jalanin</p>
 <pre><code>npm run dev
 </code></pre>
-<h2><a class="header" href="#fitur-2" id="fitur-2">Fitur 2</a></h2>
+<h1><a class="header" href="#feature-2" id="feature-2">Feature 2</a></h1>
 <blockquote>
-<p>Sebagai pemilik platform berita hanya dapat ditulis/diubah/dihapus oleh pengguna yg terotorisasi
-Kita perlu mekanisme auth nih. Cara yg umum digunakan adalah token based auth. Dinama authentikasi dan authorisisai akan menggunakan token. Token ini sendiri bisa berupa string yang merepresentasikan data pengguna.</p>
+<p>Sebagai pemilik platform berita hanya dapat ditulis/diubah oleh pengguna yg terotorisasi</p>
 </blockquote>
+<p>Kita perlu mekanisme auth nih. Cara yg umum digunakan adalah token based auth. Dinama authentikasi dan authorisisai akan menggunakan token. Token ini sendiri bisa berupa string yang merepresentasikan data pengguna.</p>
 <p>Kita akan buat token dengan jwt. Install dulu dependensi berikut</p>
 <pre><code>npm i jsonwebtoken
 </code></pre>
@@ -704,6 +711,10 @@ r.put(&quot;/&quot;,  middleware.authenticate, async(req, res) =&gt; {
 })
 ...
 </code></pre>
+<h1><a class="header" href="#feature-3" id="feature-3">Feature 3</a></h1>
+<blockquote>
+<p>Sebagai pengunjung saya ingin melihat daftar berita yang berisi judul, penulis, tanggal terbit dan isi berita</p>
+</blockquote>
 <p>Selanjutnya, kita perlu menampilkan daftar content yang ada. Kita buat repo nya.
 Untuk mempermudah, pagination akan menggunakan <code>limit offset</code>.</p>
 <pre><code class="language-js">// repository/content_repository.js
@@ -765,6 +776,23 @@ exports.findAll = ({ size = 0, page = 0 }) =&gt; {
     }
 })
 </code></pre>
+<h1><a class="header" href="#exercises" id="exercises">Exercises</a></h1>
+<p>Saatnya kita berlatih apa yg sudah dipelajari tadi. Kita akan tambah lagi fiturnya.</p>
+<ol>
+<li>Sebagai pemilik platform, berita hanya dapat dihapus oleh pengguna yg terotorisasi. Penghapusan menggunakan metode <code>soft delete</code>, yaitu tidak benar2 dihapus, hanya tidak dapat dilihat oleh pengguna.</li>
+<li>Berita yang telah dihapus tidak dapat dilihat oleh pengunjung</li>
+<li>Sebagi pengunjung saya ingin mencari artikel berita berdasarkan <code>judul berita</code>
+<ul>
+<li>bonus: coba tambahkan indexing</li>
+</ul>
+</li>
+<li>sebagi pengunjung saya ingin melihat detail berita, dan informasi penulis (nama author)</li>
+<li>sebagai user, saya ingin dan hanya dapat mengupdate data saya sendiri.</li>
+</ol>
+<h1><a class="header" href="#bonus" id="bonus">Bonus</a></h1>
+<ul>
+<li>Kita coba lakukan caching query/data dengan redis</li>
+</ul>
 
                     </main>
 

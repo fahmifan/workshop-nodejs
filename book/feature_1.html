@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Start - workshop-nodejs</title>
+        <title>Feature 1 - workshop-nodejs</title>
         
 
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
@@ -81,7 +81,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div id="sidebar-scrollbox" class="sidebar-scrollbox">
-                <ol class="chapter"><li class="expanded "><a href="start.html"><strong aria-hidden="true">1.</strong> Start</a></li><li class="expanded "><a href="feature_design.html"><strong aria-hidden="true">2.</strong> Features &amp; Design</a></li><li class="expanded "><a href="hacking.html"><strong aria-hidden="true">3.</strong> Hacking!!</a></li><li><ol class="section"><li class="expanded "><a href="feature_1.html"><strong aria-hidden="true">3.1.</strong> Feature 1</a></li><li class="expanded "><a href="feature_2.html"><strong aria-hidden="true">3.2.</strong> Feature 2</a></li><li class="expanded "><a href="feature_3.html"><strong aria-hidden="true">3.3.</strong> Feature 3</a></li></ol></li><li class="expanded "><a href="exercise.html"><strong aria-hidden="true">4.</strong> Exercises</a></li><li class="expanded "><a href="bonus.html"><strong aria-hidden="true">5.</strong> Bonus</a></li></ol>
+                <ol class="chapter"><li class="expanded "><a href="start.html"><strong aria-hidden="true">1.</strong> Start</a></li><li class="expanded "><a href="feature_design.html"><strong aria-hidden="true">2.</strong> Features &amp; Design</a></li><li class="expanded "><a href="hacking.html"><strong aria-hidden="true">3.</strong> Hacking!!</a></li><li><ol class="section"><li class="expanded "><a href="feature_1.html" class="active"><strong aria-hidden="true">3.1.</strong> Feature 1</a></li><li class="expanded "><a href="feature_2.html"><strong aria-hidden="true">3.2.</strong> Feature 2</a></li><li class="expanded "><a href="feature_3.html"><strong aria-hidden="true">3.3.</strong> Feature 3</a></li></ol></li><li class="expanded "><a href="exercise.html"><strong aria-hidden="true">4.</strong> Exercises</a></li><li class="expanded "><a href="bonus.html"><strong aria-hidden="true">5.</strong> Bonus</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -148,56 +148,180 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1><a class="header" href="#workshop-nodejs" id="workshop-nodejs">Workshop Nodejs</a></h1>
-<h2><a class="header" href="#start" id="start">Start</a></h2>
-<p>Kita akan pakai <code>repository</code> pattern, jadi semua akses ke storage/thirdparty 
-akan dilakukan di modul repository.</p>
-<pre><code>.
-├── config.js
-├── db
-│   ├── migrations.js
-│   ├── mysql.js
-│   └── utils.js
-├── main.js
-├── package.json
-├── package-lock.json
-├── README.md
-├── repository
-│   └── user_repository.js
-└── service
-    ├── service.js
-</code></pre>
-<p>Buat folder project lalu buka terminal dan ketikkan</p>
-<pre><code>npm init -y
-</code></pre>
-<p>Lalu, kita install dependesi berikut</p>
-<pre><code>npm i express body-parser mysql nodemon
-</code></pre>
-<p>Buat service <code>service/service.js</code></p>
-<pre><code class="language-js">const express = require('express')
-const bodyParser = require('body-parser')
+                        <h1><a class="header" href="#feature-1" id="feature-1">Feature 1</a></h1>
+<blockquote>
+<p>Sebagai pengunjung saya ingin dapat mendaftarkan diri ke platform, menggunakan username dan password</p>
+</blockquote>
+<h2><a class="header" href="#flow" id="flow">Flow</a></h2>
+<pre><code>- register --&gt; check user exists
+    - not exist --&gt; create user
+    - exists --&gt; error 
 
-const app = express()
+- login --&gt; check user exists
+    - not exists --&gt; error
+    - exists --&gt; validate password 
+        - invalid password --&gt; error
+        - valid --&gt; logged in
+</code></pre>
+<h2><a class="header" href="#user-service" id="user-service">User service</a></h2>
+<p>Kita akan buat <code>user service</code> ini adalah salah satu core karena akan digunakan untuk
+per-auth-an. Tapi sebelum nya kita akan setup database dulu. 
+Buat file <code>db/mysql.js</code></p>
+<pre><code class="language-js">const mysql = require('mysql');
+let pool;
+module.exports = {
+    /**
+     * @returns {mysql.Pool}
+     */
+    getPool: function () {
+      if (pool) return pool;
 
-// create application/json parser
-app.use(bodyParser.json({ type: 'application/json' }))
-app.get(&quot;/ping&quot;, (req, res) =&gt; res.json({&quot;ping&quot;: &quot;pong&quot;}))
+      pool = mysql.createPool({
+        host: '127.0.0.1',
+        port: 3306,
+        user: 'root',
+        password: 'root',
+        database: 'workshop'
+      });
 
-exports.start = () =&gt; {
-    app.listen(3000, () =&gt; {
-        console.log(&quot;server start @ :3000&quot;)
+      return pool;
+    }
+};
+
+</code></pre>
+<p>Lalu kita buat <code>database migration</code>, kita bikin <code>utils</code> untuk jalanin migration.
+Buat file <code>db/utils.js</code></p>
+<pre><code class="language-js">// db/utils.js
+const db = require('./mysql')
+const pool = db.getPool()
+
+exports.migrate = (queries = []) =&gt; {
+    pool.getConnection((err, conn) =&gt; {
+        if (err) {
+            console.error(err)
+            return
+        }
+    
+        queries.forEach(q =&gt; {
+            conn.query(q, (err, result) =&gt; {
+                if (err) {
+                    console.error(err)
+
+                    conn.release()
+                    break
+                }
+            })
+        })
+
+        conn.release()
+        pool.end()
     })
 }
 
 module.exports = exports
 </code></pre>
-<p>Kita buat file <code>main.js</code> di root folder</p>
-<pre><code class="language-js">const service = require('./service/service.js')
+<p>Kita akan tulis migration2 nya di file <code>db/migrations.js</code>, kita perlu bikin user migration</p>
+<pre><code class="language-js">const utils = require('./utils.js')
+let createTableUser = `
+    CREATE TABLE IF NOT EXISTS users (
+        id INT NOT NULL AUTO_INCREMENT,
+        username VARCHAR(255),
+        name VARCHAR(255),
+        password TEXT,
+        CONSTRAINT users_username_unique UNIQUE (username),
+        PRIMARY KEY (id)
+    );
+`
 
-service.start()
+utils.migrate([createTableUser])
 </code></pre>
-<p>Kita tes</p>
-<pre><code>curl localhost:3000/ping
+<p>sip, sebelum kita jalanin migrasi nya, nyalain mysql dan bikin database dengan nama <code>workshop</code>.</p>
+<pre><code>node db/migration.js
+</code></pre>
+<p>Sekarang kita buat <code>user_repository</code>, di sini lah fungsi CRUD dibuat. Untuk fitur satu, kita perlu 
+fungsi <code>create user</code></p>
+<pre><code class="language-js">const db = require('../db/mysql.js')
+const pool = db.getPool()
+
+exports.create = ({ username = '', name = '', password = '' }) =&gt; {
+    return new Promise((resolve, reject) =&gt; {
+        pool.getConnection((err, conn) =&gt; {
+            if (err) {
+                console.error(err)
+                return
+            }
+            
+            const q = `INSERT INTO users (username, name, password) VALUES(?, ?, ?)`
+            conn.query(q, [username, name, password], (err, res) =&gt; {
+                conn.release()
+
+                if (err) {
+                    console.error(err)
+                    reject(err)
+                    return
+                }
+
+                let id = res.insertId
+                resolve({ username, name, id })
+            })
+        })
+    })
+}
+</code></pre>
+<p>Kita bisa test langsung buat file <code>test.js</code></p>
+<pre><code class="language-js">const userRepo = require('./repository/user_repository.js')
+
+userRepo.create({ username: &quot;miun173&quot;, name: &quot;fahmi&quot;, password: &quot;test&quot; })
+    .then(user =&gt; {
+        console.log(user)
+    })
+    .catch(err =&gt; {
+        console.error(err)
+    })
+    .finally(() =&gt; {
+        process.exit(0)
+    })
+</code></pre>
+<p>Kalau udah berhasil terbuat dan tersimpan ke database. Kita lanjut bikin <code>user service</code></p>
+<pre><code class="language-js">const userRepo = require('../repository/user_repository.js')
+
+const Router = require('express').Router
+const r = Router()
+
+r.post(&quot;/&quot;, (req, res) =&gt; {
+    const { user } = req.body
+    // TODO: add validation
+    const newUser = userRepo.create(user)
+    if (!newUser) {
+        res.status(400).json({&quot;message&quot;: &quot;failed&quot;})
+        return
+    }
+    res.json(newUser)
+})
+
+module.exports = r
+</code></pre>
+<p>Terus kita akan panggil <code>user_service.js</code> dari <code>service.js</code></p>
+<pre><code class="language-js">// service/service.js
+...
+const userService = require('./user_service')
+...
+app.get(&quot;/ping&quot;, (req, res) =&gt; res.json({&quot;ping&quot;: &quot;pong&quot;}))
+app.use(&quot;/users&quot;, userService)
+...
+</code></pre>
+<p>Sebelum kita tes, kita akan pakai nodemon untuk enable fitur hotreload. Kita akan buat script start.
+Untuk jalanin <code>nodemon</code></p>
+<pre><code class="language-json">// package.json
+...
+&quot;scirpts&quot;: {
+    ...
+    &quot;dev&quot;: &quot;nodemon --ignore node_modules/ main.js&quot;
+}
+...
+</code></pre>
+<p>selanjutnya tinggal jalanin</p>
+<pre><code>npm run dev
 </code></pre>
 
                     </main>
@@ -205,9 +329,13 @@ service.start()
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
                         
+                            <a rel="prev" href="hacking.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+                        
 
                         
-                            <a rel="next" href="feature_design.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next" href="feature_2.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
                         
@@ -219,9 +347,13 @@ service.start()
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
                 
+                    <a href="hacking.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+                
 
                 
-                    <a href="feature_design.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a href="feature_2.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
                 
