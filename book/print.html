@@ -627,21 +627,100 @@ const contentService = require('./content_service')
 app.use(&quot;/contents&quot;, contentService)
 ...
 </code></pre>
-<p>Selanjutnya, kita akan perlu menampilkan daftar content yang ada. Kita buat repo nya.
-Untuk mempermudah, pagination akan menggunakan <code>limit offset</code>.</p>
+<p>Wait, masih ada yang kurang, seharusnya hanya &quot;user&quot; yang boleh membuat content. Untuk itu kita perlu melakukan otentikasi client yang melakukan <code>create content</code>.</p>
+<p>Kita perlu sebuah middleware untuk melakukan otentikasi. Untuk otentikasi kita akan menggunakan header <code>Authorization</code> dengan value <code>Bearer &lt;YourToken&gt;</code>. </p>
+<blockquote>
+<p>client ---&gt; middleware (bisa melakukan pencegatan untuk autentikasi) --&gt; router</p>
+</blockquote>
+<pre><code class="language-js">// service/middleware.js
+
+const auth = require('./auth.js')
+
+exports.authenticate = (req, res, next) =&gt; {
+    const bearerHeader = req.headers['authorization'];
+    if (!bearerHeader) {
+        // Forbidden
+        return res.sendStatus(403);
+    }
+
+    const bearer = bearerHeader.split(' ');
+    if (bearer.length != 2) {
+        return res.status(403).json({&quot;message&quot;: &quot;invalid token&quot;});
+    }
+
+    const bearerToken = bearer[1];
+    const token = bearerToken;
+    try {
+        const decoded = auth.verfiy(token)
+        if (!req.context) {
+            req.context = {}
+        }
+    
+        req.context.user = decoded  
+        next();
+    } catch (err) {
+        console.error(err)
+        return res.sendStatus(403)
+    }
+}
+
+module.exports = exports
+</code></pre>
+<p>Lalu, kita pasang middleware tersebut ke content_service post</p>
+<pre><code class="language-js">const middleware = require('./middleware.js')
+...
+r.post(&quot;/&quot;, middleware.authenticate, async (req, res) =&gt; {...}
+</code></pre>
+<p>Next, kita akan melakukan update content. Untuk update content hanya dapat dilakukan oleh author nya saja dengan kata lain kita perlu cek autorisasi. Kita buat router nya dengan method PUT</p>
 <pre><code class="language-js">...
+r.put(&quot;/&quot;,  middleware.authenticate, async(req, res) =&gt; {
+    try {
+        const { content } = req.body
+        // TODO: add validation
+
+        const { user } = req.context
+
+        // check if content exists
+        const oldContent = await contentRepo.findByID(content.id)
+        if (!oldContent) {
+            return res.status(404).json({&quot;message&quot;: &quot;content not found&quot;})
+        }
+
+        // not the same user
+        if (!user || (user.id !== oldContent.author_id)) {
+            return res.status(403).json({&quot;message&quot;: &quot;cannot update content&quot;})
+        }
+
+        const updatedContent = await contentRepo.update(content)
+        if (!updatedContent) {
+            return res.status(400).json({&quot;message&quot;: &quot;failed&quot;})
+        }
+    
+        return res.json(updatedContent)   
+    } catch (err) {
+        console.error(err)
+        return res.status(500).json({&quot;message&quot;: &quot;something wrong&quot;})
+    }
+})
+...
+</code></pre>
+<p>Selanjutnya, kita perlu menampilkan daftar content yang ada. Kita buat repo nya.
+Untuk mempermudah, pagination akan menggunakan <code>limit offset</code>.</p>
+<pre><code class="language-js">// repository/content_repository.js
+...
 const MAX_SIZE = 50
 ...
 exports.findAll = ({ size = 0, page = 0 }) =&gt; {
-    if (page &lt; 0) {
-        page = 0
+    if (!page || page &lt; 1) {
+        page = 1
     }
 
-    if (size &lt;= 0 || size &gt; 50) {
+    if (!size || size &lt;= 0 || size &gt; 50) {
         size = MAX_SIZE
     }
 
-    const offset = size * page
+    // for first page, offset is 0
+    const offset = size * (page-1)
     return new Promise((resolve, reject) =&gt; {
         pool.getConnection((err, conn) =&gt; {
             if (err) {
@@ -665,7 +744,7 @@ exports.findAll = ({ size = 0, page = 0 }) =&gt; {
     })
 }
 </code></pre>
-<p>Selanjutnya, kita tambahkan di content service</p>
+<p>kita buat router nya di content_service</p>
 <pre><code class="language-js">r.get(&quot;/&quot;, async(req, res) =&gt; {
     try {
         let { size, page } = req.query
