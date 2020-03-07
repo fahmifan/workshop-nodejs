@@ -5,3 +5,7 @@ multilingual = false
 src = "src"
 create-missing = false
 title = "workshop-nodejs"
+
+[output.html]
+default-theme = "ayu"
+preferred-dark-theme = "ayu"
