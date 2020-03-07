@@ -538,22 +538,106 @@ app.use("/contents", contentService)
 ...
 ```
 
-Selanjutnya, kita akan perlu menampilkan daftar content yang ada. Kita buat repo nya.
+Wait, masih ada yang kurang, seharusnya hanya "user" yang boleh membuat content. Untuk itu kita perlu melakukan otentikasi client yang melakukan `create content`.
+
+Kita perlu sebuah middleware untuk melakukan otentikasi. Untuk otentikasi kita akan menggunakan header `Authorization` dengan value `Bearer <YourToken>`. 
+> client ---> middleware (bisa melakukan pencegatan untuk autentikasi) --> router
+```js
+// service/middleware.js
+
+const auth = require('./auth.js')
+
+exports.authenticate = (req, res, next) => {
+    const bearerHeader = req.headers['authorization'];
+    if (!bearerHeader) {
+        // Forbidden
+        return res.sendStatus(403);
+    }
+
+    const bearer = bearerHeader.split(' ');
+    if (bearer.length != 2) {
+        return res.status(403).json({"message": "invalid token"});
+    }
+
+    const bearerToken = bearer[1];
+    const token = bearerToken;
+    try {
+        const decoded = auth.verfiy(token)
+        if (!req.context) {
+            req.context = {}
+        }
+    
+        req.context.user = decoded  
+        next();
+    } catch (err) {
+        console.error(err)
+        return res.sendStatus(403)
+    }
+}
+
+module.exports = exports
+```
+
+Lalu, kita pasang middleware tersebut ke content_service post
+```js
+const middleware = require('./middleware.js')
+...
+r.post("/", middleware.authenticate, async (req, res) => {...}
+```
+
+Next, kita akan melakukan update content. Untuk update content hanya dapat dilakukan oleh author nya saja dengan kata lain kita perlu cek autorisasi. Kita buat router nya dengan method PUT
+```js
+...
+r.put("/",  middleware.authenticate, async(req, res) => {
+    try {
+        const { content } = req.body
+        // TODO: add validation
+
+        const { user } = req.context
+
+        // check if content exists
+        const oldContent = await contentRepo.findByID(content.id)
+        if (!oldContent) {
+            return res.status(404).json({"message": "content not found"})
+        }
+
+        // not the same user
+        if (!user || (user.id !== oldContent.author_id)) {
+            return res.status(403).json({"message": "cannot update content"})
+        }
+
+        const updatedContent = await contentRepo.update(content)
+        if (!updatedContent) {
+            return res.status(400).json({"message": "failed"})
+        }
+    
+        return res.json(updatedContent)   
+    } catch (err) {
+        console.error(err)
+        return res.status(500).json({"message": "something wrong"})
+    }
+})
+...
+```
+
+Selanjutnya, kita perlu menampilkan daftar content yang ada. Kita buat repo nya.
 Untuk mempermudah, pagination akan menggunakan `limit offset`.
 ```js
+// repository/content_repository.js
 ...
 const MAX_SIZE = 50
 ...
 exports.findAll = ({ size = 0, page = 0 }) => {
-    if (page < 0) {
-        page = 0
+    if (!page || page < 1) {
+        page = 1
     }
 
-    if (size <= 0 || size > 50) {
+    if (!size || size <= 0 || size > 50) {
         size = MAX_SIZE
     }
 
-    const offset = size * page
+    // for first page, offset is 0
+    const offset = size * (page-1)
     return new Promise((resolve, reject) => {
         pool.getConnection((err, conn) => {
             if (err) {
@@ -578,7 +662,7 @@ exports.findAll = ({ size = 0, page = 0 }) => {
 }
 ```
 
-Selanjutnya, kita tambahkan di content service
+kita buat router nya di content_service
 ```js
 r.get("/", async(req, res) => {
     try {
