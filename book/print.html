@@ -695,7 +695,7 @@ r.put(&quot;/&quot;,  middleware.authenticate, async(req, res) =&gt; {
 
         // not the same user
         if (!user || (user.id !== oldContent.author_id)) {
-            return res.status(403).json({&quot;message&quot;: &quot;cannot update content&quot;})
+            return res.status(404).json({&quot;message&quot;: &quot;author not found&quot;})
         }
 
         const updatedContent = await contentRepo.update(content)
@@ -710,6 +710,36 @@ r.put(&quot;/&quot;,  middleware.authenticate, async(req, res) =&gt; {
     }
 })
 ...
+</code></pre>
+<p>Kita juga perlu menambahkan update di content_repository</p>
+<pre><code class="language-js">// repository/content_repository.js
+exports.update = ({ id = 0, author_id = 0, title = '', body = '' }) =&gt; {
+    return new Promise((resolve, reject) =&gt; {
+        pool.getConnection((err, conn) =&gt; {
+            if (err) {
+                console.error(err)
+                reject(err)
+                return
+            }
+
+            // slug ini harus dibuat unique
+            const slug = createUniqueSlug(title)
+
+            const q = `UPDATE contents SET author_id = ?, title = ?, body = ?, slug = ? WHERE id = ?`
+            conn.query(q, [author_id, title, body, slug, id], (err, res) =&gt; {
+                conn.release()
+
+                if (err) {
+                    console.error(err)
+                    reject(err)
+                    return
+                }
+
+                resolve({ id, author_id, title, body, slug })
+            })
+        })
+    })
+}
 </code></pre>
 <h1><a class="header" href="#feature-3" id="feature-3">Feature 3</a></h1>
 <blockquote>
