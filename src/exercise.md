@@ -6,6 +6,6 @@ Saatnya kita berlatih apa yg sudah dipelajari tadi. Kita akan tambah lagi fiturn
 5. Berita yang telah dihapus tidak dapat dilihat oleh pengunjung
 6. Sebagi pengunjung saya ingin mencari artikel berita berdasarkan `judul berita`
     - bonus: coba tambahkan indexing
-7. sebagi pengunjung saya ingin melihat detail berita, dan informasi penulis (nama author)
+7. sebagi pengunjung saya ingin melihat detail berita, dan informasi penulis (nama author) by slug
 8. sebagai user, saya ingin dan hanya dapat mengupdate data saya sendiri.
 
